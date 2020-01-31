@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Creator Kit - FPS/Scenes/GameScene.unity
-    guid: e24ce4afbe4382f4291abb3bd2b76e90
+    path: Assets/NovWrapper/GameNewPost.unity
+    guid: 79781cc1b47944547ac71de43177f937
   m_configObjects: {}

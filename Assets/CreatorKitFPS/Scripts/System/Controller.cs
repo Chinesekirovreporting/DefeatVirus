@@ -30,7 +30,7 @@ public class Controller : MonoBehaviour
     public AmmoInventoryEntry[] startingAmmo;
 
     [Header("Control Settings")]
-    public float MouseSensitivity = 100.0f;
+    public float MouseSensitivity = 1.0f;
     public float PlayerSpeed = 5.0f;
     public float RunningSpeed = 7.0f;
     public float JumpSpeed = 5.0f;
@@ -68,8 +68,16 @@ public class Controller : MonoBehaviour
     
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (!NovDebugConstants.USE_TOUCH_CONTROL)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
 
         m_IsPaused = false;
         m_Grounded = true;
@@ -156,7 +164,15 @@ public class Controller : MonoBehaviour
             }
 
             // Move around with WASD
-            move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+            if (NovDebugConstants.USE_TOUCH_CONTROL)
+            {
+                move = new Vector3(ControllerUI.RunAxis.x, 0, ControllerUI.RunAxis.y);
+            }
+            else
+            {
+                move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+            }
+            
             if (move.sqrMagnitude > 1.0f)
                 move.Normalize();
 
@@ -168,7 +184,15 @@ public class Controller : MonoBehaviour
             m_CharacterController.Move(move);
             
             // Turn player
-            float turnPlayer =  Input.GetAxis("Mouse X") * MouseSensitivity;
+            float turnPlayer;
+            if (NovDebugConstants.USE_TOUCH_CONTROL)
+            {
+                turnPlayer = ControllerUI.LookAxis.x * MouseSensitivity;
+            }
+            else
+            {
+                turnPlayer = Input.GetAxis("Mouse X") * MouseSensitivity;
+            }
             m_HorizontalAngle = m_HorizontalAngle + turnPlayer;
 
             if (m_HorizontalAngle > 360) m_HorizontalAngle -= 360.0f;
@@ -179,14 +203,31 @@ public class Controller : MonoBehaviour
             transform.localEulerAngles = currentAngles;
 
             // Camera look up/down
-            var turnCam = -Input.GetAxis("Mouse Y");
+            float turnCam;
+
+            if (NovDebugConstants.USE_TOUCH_CONTROL)
+            {
+                turnCam = -ControllerUI.LookAxis.y;
+            }
+            else
+            {
+                turnCam = -Input.GetAxis("Mouse Y");
+            }
+            
             turnCam = turnCam * MouseSensitivity;
             m_VerticalAngle = Mathf.Clamp(turnCam + m_VerticalAngle, -89.0f, 89.0f);
             currentAngles = CameraPosition.transform.localEulerAngles;
             currentAngles.x = m_VerticalAngle;
             CameraPosition.transform.localEulerAngles = currentAngles;
-  
-            m_Weapons[m_CurrentWeapon].triggerDown = Input.GetMouseButton(0);
+
+            if (NovDebugConstants.USE_TOUCH_CONTROL)
+            {
+                m_Weapons[m_CurrentWeapon].triggerDown = ControllerUI.FirePressed;
+            }
+            else
+            {
+                m_Weapons[m_CurrentWeapon].triggerDown = Input.GetMouseButton(0);
+            }
 
             Speed = move.magnitude / (PlayerSpeed * Time.deltaTime);
 
@@ -240,6 +281,12 @@ public class Controller : MonoBehaviour
     public void DisplayCursor(bool display)
     {
         m_IsPaused = display;
+        
+        if (NovDebugConstants.USE_TOUCH_CONTROL)
+        {
+            display = true;
+        }
+        
         Cursor.lockState = display ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = display;
     }
