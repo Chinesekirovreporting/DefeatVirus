@@ -147,7 +147,18 @@ public class Controller : MonoBehaviour
         if (!m_IsPaused && !LockControl)
         {
             // Jump (we do it first as 
-            if (m_Grounded && Input.GetButtonDown("Jump"))
+            bool jumpPressed;
+            
+            if (NovDebugConstants.USE_TOUCH_CONTROL)
+            {
+                jumpPressed = ControllerUI.JumpPressed;
+            }
+            else
+            {
+                jumpPressed = Input.GetButtonDown("Jump");
+            }
+            
+            if (m_Grounded && jumpPressed)
             {
                 m_VerticalSpeed = JumpSpeed;
                 m_Grounded = false;
@@ -312,7 +323,12 @@ public class Controller : MonoBehaviour
         }
     }
 
-    void ChangeWeapon(int number)
+    public void NextWeapon()
+    {
+        ChangeWeapon(m_CurrentWeapon + 1);
+    }
+
+    public void ChangeWeapon(int number)
     {
         if (m_CurrentWeapon != -1)
         {
